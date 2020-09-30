@@ -5,6 +5,7 @@ dm_uncaught_errors = false
 default_prefix = "!"  # The prefix for the bot's commands
 guild_id = 1  # The ID of the main/support guild
 event_webhook_url = ""
+tree_file_location = "/var/www/images/simp/trees"
 
 # Data that's copied directly over to a command without processing
 [command_data]

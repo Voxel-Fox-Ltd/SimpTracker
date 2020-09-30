@@ -15,6 +15,7 @@ from discord.ext import commands
 from cogs.utils.custom_context import CustomContext
 from cogs.utils.database import DatabaseConnection
 from cogs.utils.redis import RedisConnection
+from cogs.utils.simpable_user import SimpableUser
 
 
 def get_prefix(bot, message:discord.Message):
@@ -27,6 +28,7 @@ def get_prefix(bot, message:discord.Message):
     if prefix in ["'", "‘"]:
         prefix = ["'", "‘"]
     prefix = [prefix] if isinstance(prefix, str) else prefix
+    prefix.extend([i.title() for i in prefix])
     return commands.when_mentioned_or(*prefix)(bot, message)
 
 
@@ -82,6 +84,7 @@ class CustomBot(commands.AutoShardedBot):
         self.logger.debug("Clearing caches")
         self.guild_settings.clear()
         self.user_settings.clear()
+        SimpableUser.all_simpable_users.clear()
 
         # Get database connection
         db = await self.database.get_connection()
@@ -104,6 +107,12 @@ class CustomBot(commands.AutoShardedBot):
         for row in data:
             for key, value in row.items():
                 self.user_settings[row['user_id']][key] = value
+
+        # Get user settings
+        data = await self.get_all_table_data(db, "simping_users")
+        for row in data:
+            SimpableUser.get_simpable_user(row['user_id'], row['guild_id']).add_simping_for(row['simping_for'])
+            SimpableUser.get_simpable_user(row['simping_for'], row['guild_id']).add_being_simped_by(row['user_id'])
 
         # Wait for the bot to cache users before continuing
         self.logger.debug("Waiting until ready before completing startup method.")

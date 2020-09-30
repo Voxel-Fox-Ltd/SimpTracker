@@ -25,3 +25,11 @@ CREATE TABLE channel_list(
     value VARCHAR(50),
     PRIMARY KEY (guild_id, channel_id, key)
 );
+
+
+CREATE TABLE simping_users(
+    user_id BIGINT,
+    guild_id BIGINT,
+    simping_for BIGINT,
+    PRIMARY KEY (user_id, guild_id, simping_for)
+);
