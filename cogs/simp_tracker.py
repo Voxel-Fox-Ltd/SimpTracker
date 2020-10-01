@@ -119,8 +119,6 @@ class SimpTracker(utils.Cog):
         already_added = set()  # user id list
         added_user_ids = set()
         working = [utils.SimpableUser.get_simpable_user(user.id, ctx.guild.id)]  # people to be looked at
-        # working.extend(utils.SimpableUser.get_simpable_user(user.id, ctx.guild.id).simping_for)
-        # working.extend(utils.SimpableUser.get_simpable_user(user.id, ctx.guild.id).being_simped_by)
 
         # Go through each valid user
         while working:
@@ -138,7 +136,7 @@ class SimpTracker(utils.Cog):
             for u in current.simping_for:
                 if ctx.guild.get_member(u.user_id) is None:
                     continue
-                v = f'{current.user_id}->{u.user_id};'
+                v = f'{current.user_id}->{u.user_id}'  # note - no semicolon
                 if v not in lines:
                     lines.append(v)
                 added_user_ids.add(u.user_id)
@@ -147,7 +145,7 @@ class SimpTracker(utils.Cog):
             for u in current.being_simped_by:
                 if ctx.guild.get_member(u.user_id) is None:
                     continue
-                v = f'{u.user_id}->{current.user_id};'
+                v = f'{u.user_id}->{current.user_id}'  # note - no semicolon
                 if v not in lines:
                     lines.append(v)
                 added_user_ids.add(u.user_id)
@@ -156,17 +154,15 @@ class SimpTracker(utils.Cog):
             for u in [i for i in current.simping_for if i in current.being_simped_by]:
                 if ctx.guild.get_member(u.user_id) is None:
                     continue
-                for x in [f'{current.user_id}->{u.user_id};', f'{u.user_id}->{current.user_id};', f'{current.user_id}->{u.user_id}[dir=both,color=red];', f'{u.user_id}->{current.user_id}[dir=both,color=red];']:
+                for x in [f'{current.user_id}->{u.user_id}', f'{u.user_id}->{current.user_id}', f'{current.user_id}->{u.user_id}[dir=both,color=purple];', f'{u.user_id}->{current.user_id}[dir=both,color=purple];']:
                     try:
                         lines.remove(x)
                     except ValueError:
                         pass
-                lines.append(f'{current.user_id}->{u.user_id}[dir=both,color=red];')
+                lines.append(f'{current.user_id}->{u.user_id}[dir=both,color=purple];')
 
             # And add them to the list of users to look at
             already_added.add(current.user_id)
-            # working.extend([i for i in current.simping_for if ctx.guild.get_member(i.user_id)])
-            # working.extend([i for i in current.being_simped_by if ctx.guild.get_member(i.user_id)])
             working.remove(current)
 
         # Remove people who aren't in the server
@@ -182,6 +178,18 @@ class SimpTracker(utils.Cog):
                         lines.remove(i)
                     except ValueError:
                         pass
+
+        # Colour up some lines
+        new_lines = []
+        for index, line in enumerate(lines):
+            if index == 0 or index == len(lines) - 1 or '[' in line:
+                new_lines.append(line)
+                continue
+            if line.startswith(str(ctx.author.id)):
+                new_lines.append(line + '[color=red];')
+            else:
+                new_lines.append(line + '[color=blue];')
+        lines = new_lines
 
         # Now lets output that
         text = "" if len(lines) > 1 else ":c"
