@@ -1,5 +1,6 @@
 import io
 import asyncio
+import textwrap
 
 import asyncpg
 import discord
@@ -76,18 +77,31 @@ class SimpTracker(utils.Cog):
         mutual_simping = [i for i in simping_for if i in being_simped_by]
         with utils.Embed(use_random_colour=True) as embed:
             embed.set_author_to_user(user)
+
+            # Add simping for
             if [i for i in simping_for if i not in mutual_simping]:
                 embed.add_field("Simping For", ", ".join([i.mention for i in simping_for if i not in mutual_simping]), inline=False)
             else:
-                embed.add_field("Simping For", "Nobody... \N{THINKING FACE}")
+                if not mutual_simping:
+                    embed.add_field("Simping For", "Nobody... \N{THINKING FACE}")
+                else:
+                    embed.add_field("Simping For", "Nobody")
+
+            # Add being simped by
             if [i for i in being_simped_by if i not in mutual_simping]:
                 embed.add_field("Being Simped By", ", ".join([i.mention for i in being_simped_by if i not in mutual_simping]), inline=False)
             else:
-                embed.add_field("Being Simped By", "Nobody... \N{THINKING FACE}")
+                if not mutual_simping:
+                    embed.add_field("Being Simped By", "Nobody... \N{UNAMUSED FACE}")
+                else:
+                    embed.add_field("Being Simped By", "Nobody")
+
+            # Add mutuals
             if mutual_simping:
                 embed.add_field("Mutual Simping owo", ", ".join([i.mention for i in mutual_simping]), inline=False)
-        return await ctx.send(embed=embed)
 
+        # And done
+        return await ctx.send(embed=embed)
 
     @commands.command(cls=utils.Command, aliases=['tree', 't', 'st'])
     @utils.cooldown.cooldown(1, 60, commands.BucketType.member)
@@ -105,8 +119,8 @@ class SimpTracker(utils.Cog):
         already_added = set()  # user id list
         added_user_ids = set()
         working = [utils.SimpableUser.get_simpable_user(user.id, ctx.guild.id)]  # people to be looked at
-        working.extend(utils.SimpableUser.get_simpable_user(user.id, ctx.guild.id).simping_for)
-        working.extend(utils.SimpableUser.get_simpable_user(user.id, ctx.guild.id).being_simped_by)
+        # working.extend(utils.SimpableUser.get_simpable_user(user.id, ctx.guild.id).simping_for)
+        # working.extend(utils.SimpableUser.get_simpable_user(user.id, ctx.guild.id).being_simped_by)
 
         # Go through each valid user
         while working:
@@ -119,19 +133,6 @@ class SimpTracker(utils.Cog):
             if current.user_id in already_added:
                 working.remove(current)
                 continue
-
-            # # See if they're in the server
-            # current_member = ctx.guild.get_member(current.user_id)
-            # if current_member is None:
-            #     already_added.add(current.user_id)
-            #     working.remove(current)
-            #     continue
-
-            # # Add their name
-            # current_name = str(current_member).replace('"', '\\"')
-            # v = f'{current.user_id}[label="{current_name}"];'
-            # if v not in lines:
-            #     lines.append(v)
 
             # Add who they simpin for
             for u in current.simping_for:
@@ -177,7 +178,10 @@ class SimpTracker(utils.Cog):
                 continue
             for line in lines:
                 if str(i) in line:
-                    lines.remove(i)
+                    try:
+                        lines.remove(i)
+                    except ValueError:
+                        pass
 
         # Now lets output that
         text = "" if len(lines) > 1 else ":c"
@@ -213,6 +217,96 @@ class SimpTracker(utils.Cog):
         # Send file and delete cached
         file = discord.File(fp=f'{self.bot.config["tree_file_location"]}/{ctx.author.id}.png')
         await ctx.send(text, file=file)
+
+    @commands.command(cls=utils.Command, hidden=True)
+    @utils.cooldown.cooldown(1, 60, commands.BucketType.member)
+    @commands.bot_has_permissions(send_messages=True, attach_files=True, embed_links=True)
+    @commands.is_owner()
+    @commands.guild_only()
+    async def showraw(self, ctx:utils.Context, user:discord.Member=None):
+        """See who's simping for who"""
+
+        # See who we're lookin at
+        user = user or ctx.author
+        await ctx.trigger_typing()
+
+        # Set up vars for our lines
+        lines = []  # lines of dot
+        already_added = set()  # user id list
+        added_user_ids = set()
+        working = [utils.SimpableUser.get_simpable_user(user.id, ctx.guild.id)]  # people to be looked at
+        # working.extend(utils.SimpableUser.get_simpable_user(user.id, ctx.guild.id).simping_for)
+        # working.extend(utils.SimpableUser.get_simpable_user(user.id, ctx.guild.id).being_simped_by)
+
+        # Go through each valid user
+        while working:
+
+            # Look at the first user
+            current = working[0]
+            added_user_ids.add(current.user_id)
+
+            # See if we already added them
+            if current.user_id in already_added:
+                working.remove(current)
+                continue
+
+            # Add who they simpin for
+            for u in current.simping_for:
+                if ctx.guild.get_member(u.user_id) is None:
+                    continue
+                v = f'{current.user_id}->{u.user_id};'
+                if v not in lines:
+                    lines.append(v)
+                added_user_ids.add(u.user_id)
+
+            # Add who they simpin by
+            for u in current.being_simped_by:
+                if ctx.guild.get_member(u.user_id) is None:
+                    continue
+                v = f'{u.user_id}->{current.user_id};'
+                if v not in lines:
+                    lines.append(v)
+                added_user_ids.add(u.user_id)
+
+            # Remove both of those to make it bidirectional
+            for u in [i for i in current.simping_for if i in current.being_simped_by]:
+                if ctx.guild.get_member(u.user_id) is None:
+                    continue
+                for x in [f'{current.user_id}->{u.user_id};', f'{u.user_id}->{current.user_id};', f'{current.user_id}->{u.user_id}[dir=both,color=red];', f'{u.user_id}->{current.user_id}[dir=both,color=red];']:
+                    try:
+                        lines.remove(x)
+                    except ValueError:
+                        pass
+                lines.append(f'{current.user_id}->{u.user_id}[dir=both,color=red];')
+
+            # And add them to the list of users to look at
+            already_added.add(current.user_id)
+            # working.extend([i for i in current.simping_for if ctx.guild.get_member(i.user_id)])
+            # working.extend([i for i in current.being_simped_by if ctx.guild.get_member(i.user_id)])
+            working.remove(current)
+
+        # Remove people who aren't in the server
+        for i in added_user_ids:
+            member = ctx.guild.get_member(i)
+            if member is not None:
+                current_name = str(member).replace('"', '\\"')
+                lines.insert(0, f'{i}[label="{current_name}"];')
+                continue
+            for line in lines:
+                if str(i) in line:
+                    try:
+                        lines.remove(i)
+                    except ValueError:
+                        pass
+
+        # Now lets output that
+        lines.append("overlap=false;")
+        dot_code = '\n'.join(lines)
+        all_dot_code = 'digraph{\n' + textwrap.indent(dot_code, "    ") + '\n}'
+
+        # Send file and delete cached
+        file = discord.File(io.StringIO(all_dot_code), filename="simp.gz")
+        await ctx.send(file=file)
 
 
 def setup(bot:utils.Bot):
