@@ -12,6 +12,17 @@ class SimpTracker(utils.Cog):
 
     MAX_SIMPING_USERS = 3
 
+    async def cache_setup(self, db):
+        """
+        Set up the cache of simpable users
+        """
+
+        # Get user settings
+        data = await self.bot.get_all_table_data(db, "simping_users")
+        for row in data:
+            localutils.SimpableUser.get_simpable_user(row['user_id'], row['guild_id']).add_simping_for(row['simping_for'])
+            localutils.SimpableUser.get_simpable_user(row['simping_for'], row['guild_id']).add_being_simped_by(row['user_id'])
+
     @utils.command()
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
