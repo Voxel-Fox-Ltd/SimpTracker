@@ -18,7 +18,7 @@ class SimpTracker(utils.Cog):
         """
 
         # Get user settings
-        data = await self.bot.get_all_table_data(db, "simping_users")
+        data = await self.bot._get_all_table_data(db, "simping_users")
         for row in data:
             localutils.SimpableUser.get_simpable_user(row['user_id'], row['guild_id']).add_simping_for(row['simping_for'])
             localutils.SimpableUser.get_simpable_user(row['simping_for'], row['guild_id']).add_being_simped_by(row['user_id'])
