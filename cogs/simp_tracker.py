@@ -11,6 +11,7 @@ from cogs import utils as localutils
 class SimpTracker(utils.Cog):
 
     MAX_SIMPING_USERS = 3
+    CAN_SIMP_FOR_BOTS = True
 
     async def cache_setup(self, db):
         """
@@ -30,10 +31,13 @@ class SimpTracker(utils.Cog):
         """Sets you as simping for a user"""
 
         # No pls not yourself
-        if user == ctx.author or user == ctx.guild.me:
-            return await ctx.send("Well, _obviously_.")
-        elif user.bot and ctx.original_author_id not in self.bot.owner_ids:
-            return await ctx.send("That's just a bit sad, really.")
+        if user == ctx.author:
+            return await ctx.send("There's self love and then there's whatever _this_ is.")
+        elif user == ctx.guild.me:
+            return await ctx.send("Well, _duh_. I'm beautiful.")
+        elif user.bot:
+            if not self.CAN_SIMP_FOR_BOTS and ctx.original_author_id not in self.bot.owner_ids:
+                return await ctx.send("That's just a bit sad, really.")
 
         # See if they're already simping for 3 people
         simpable_users_in_guild = [i for i in localutils.SimpableUser.get_simpable_user(ctx.author.id, ctx.guild.id).simping_for if ctx.guild.get_member(i.user_id) is not None]
@@ -62,11 +66,12 @@ class SimpTracker(utils.Cog):
 
         # No pls not yourself
         if user == ctx.author:
-            return await ctx.send("Well, _obviously_.")
+            return await ctx.send("That's a sad cat move, gamer.")
         elif user == ctx.guild.me:
             return await ctx.send("I won't pretend I'm not offended.")
-        elif user.bot and ctx.original_author_id not in self.bot.owner_ids:
-            return await ctx.send("Who needs bots, anyway?")
+        elif user.bot:
+            if not self.CAN_SIMP_FOR_BOTS and ctx.original_author_id not in self.bot.owner_ids:
+                return await ctx.send("Haha yeah; who needs bots anyway?")
 
         # Add to db
         async with self.bot.database() as db:
@@ -223,7 +228,8 @@ class SimpTracker(utils.Cog):
         # Convert to an image
         dot = await asyncio.create_subprocess_exec(*[
             'neato',
-            '-Tpng:gd',
+            # '-Tpng:gd',
+            '-Tpng',
             f'{self.bot.config["tree_file_location"].rstrip("/")}/{ctx.author.id}.gz',
             '-o',
             f'{self.bot.config["tree_file_location"].rstrip("/")}/{ctx.author.id}.png',
