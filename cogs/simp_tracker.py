@@ -5,7 +5,7 @@ import discord
 from discord.ext import commands
 import voxelbotutils as utils
 
-import utils as localutils
+from cogs import utils as localutils
 
 
 class SimpTracker(utils.Cog):
