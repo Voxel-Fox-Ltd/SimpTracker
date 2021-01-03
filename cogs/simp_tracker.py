@@ -217,7 +217,7 @@ class SimpTracker(utils.Cog):
         text = "" if len(lines) > 1 else ":c"
         lines.append(";overlap=false;")
         dot_code = ''.join(lines)
-        all_dot_code = 'digraph{' + dot_code + '}'
+        all_dot_code = 'digraph{' + dot_code.replace(';;', ';') + '}'
         try:
             with open(f'{self.bot.config["tree_file_location"].rstrip("/")}/{ctx.author.id}.gz', 'w', encoding='utf-8') as a:
                 a.write(all_dot_code)
