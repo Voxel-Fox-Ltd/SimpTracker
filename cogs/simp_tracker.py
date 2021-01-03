@@ -207,7 +207,7 @@ class SimpTracker(utils.Cog):
             if index == 0 or index == len(lines) - 1 or '[' in line:
                 new_lines.append(line)
                 continue
-            if line.startswith(str(ctx.author.id)):
+            if line.startswith(str(ctx.author.id).replace('"', '\\"')):
                 new_lines.append(line + '[color=red];')
             else:
                 new_lines.append(line + '[color=blue];')
