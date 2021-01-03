@@ -215,7 +215,7 @@ class SimpTracker(utils.Cog):
 
         # Now lets output that
         text = "" if len(lines) > 1 else ":c"
-        lines.append("overlap=false;")
+        lines.append(";overlap=false;")
         dot_code = ''.join(lines)
         all_dot_code = 'digraph{' + dot_code + '}'
         try:
