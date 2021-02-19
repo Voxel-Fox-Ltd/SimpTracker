@@ -10,7 +10,7 @@ from cogs import utils as localutils
 
 class SimpTracker(utils.Cog):
 
-    MAX_SIMPING_USERS = 3
+    MAX_SIMPING_USERS = 7
     CAN_SIMP_FOR_BOTS = True
 
     async def cache_setup(self, db):
@@ -41,7 +41,7 @@ class SimpTracker(utils.Cog):
 
         # See if they're already simping for 3 people
         simpable_users_in_guild = [i for i in localutils.SimpableUser.get_simpable_user(ctx.author.id, ctx.guild.id).simping_for if ctx.guild.get_member(i.user_id) is not None]
-        if len(simpable_users_in_guild) >= self.MAX_SIMPING_USERS and ctx.original_author_id not in self.bot.owner_ids:
+        if len(simpable_users_in_guild) >= self.MAX_SIMPING_USERS and ctx.original_author_id not in self.bot.owner_ids and ctx.original_author_id != 393305855929483264:
             return await ctx.send(f"You can only simp for **{self.MAX_SIMPING_USERS}** users at once.")
 
         # Add to db
