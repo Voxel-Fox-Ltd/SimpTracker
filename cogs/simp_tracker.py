@@ -10,7 +10,7 @@ from cogs import utils as localutils
 
 class SimpTracker(utils.Cog):
 
-    MAX_SIMPING_USERS = 3
+    MAX_SIMPING_USERS = 7
     CAN_SIMP_FOR_BOTS = True
 
     async def cache_setup(self, db):
