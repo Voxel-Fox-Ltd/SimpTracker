@@ -248,7 +248,7 @@ class SimpTracker(utils.Cog):
         # Send file and delete cached
         file = discord.File(fp=f'{self.bot.config["tree_file_location"]}/{ctx.author.id}.png')
         embed = utils.Embed(use_random_colour=True).set_image(f"attachment://{ctx.author.id}.png")
-        ctx._set_footer(embed)
+        self.bot.set_footer_from_config(embed)
         await ctx.send(text, file=file, embed=embed)
 
 
