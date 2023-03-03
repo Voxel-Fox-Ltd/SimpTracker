@@ -1,1 +1,4 @@
-voxelbotutils
+novus>=1.0.0
+asyncpg
+pyyaml
+asyncpg
