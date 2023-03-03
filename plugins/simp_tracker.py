@@ -28,9 +28,13 @@ from novus.ext import client
 from utils.database import SimpUser
 
 
-class SimpTracker(client.Plugin):
+async def get_simp_limit(user_id: int) -> int:
+    return {
+        704708159901663302: 69,
+    }.get(user_id, 5)
 
-    SIMP_USER_LIMIT = 3
+
+class SimpTracker(client.Plugin):
 
     @client.command(
         name="simp",
@@ -77,7 +81,7 @@ class SimpTracker(client.Plugin):
             )
 
         # Get their current simp count
-        if (current := len(current_simping)) >= self.SIMP_USER_LIMIT:
+        if (current := len(current_simping)) >= await get_simp_limit(ctx.user.id):
             return await ctx.send(
                 (
                     "Sorry, {0}, you're already simping for **{1}** people - "
