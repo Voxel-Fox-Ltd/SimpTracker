@@ -31,7 +31,6 @@ from utils.database import SimpUser
 class SimpTracker(client.Plugin):
 
     SIMP_USER_LIMIT = 3
-    CHUNKED: set[int] = set()
 
     @client.command(
         name="simp",
