@@ -39,12 +39,12 @@ class SimpTracker(client.Plugin):
 
     @client.command(
         name="Simp for user",
-        description="Add a person that you're simping for.",
+        description="",
         type=novus.ApplicationCommandType.user,
         dm_permission=False,
     )
     async def simp_user_context(self, ctx: novus.types.CommandI, user: novus.User) -> None:
-        return await self.add.callback(ctx, user)  # pyright: ignore
+        return await self.add(ctx, user)  # pyright: ignore
 
     @client.command(
         name="simp",
@@ -73,7 +73,7 @@ class SimpTracker(client.Plugin):
         # Get the guild ID
         guild_id: int
         try:
-            guild_id = ctx.data.guild.id  # pyright: ignore
+            guild_id = ctx.guild.id  # pyright: ignore
         except AttributeError:
             return await ctx.send("This command cannot be run in DMs.")
 
