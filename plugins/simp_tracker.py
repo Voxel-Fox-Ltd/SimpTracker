@@ -38,6 +38,15 @@ async def get_simp_limit(user_id: int) -> int:
 class SimpTracker(client.Plugin):
 
     @client.command(
+        name="Simp for user",
+        description="Add a person that you're simping for.",
+        type=novus.ApplicationCommandType.user,
+        dm_permission=False,
+    )
+    async def simp_user_context(self, ctx: novus.types.CommandI, user: novus.User) -> None:
+        return await self.add.callback(ctx, user)  # pyright: ignore
+
+    @client.command(
         name="simp",
         description="Add a person that you're simping for.",
         options=[
