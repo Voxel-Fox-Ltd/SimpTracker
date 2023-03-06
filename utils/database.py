@@ -18,6 +18,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 from __future__ import annotations
 
 from typing_extensions import Self
+from datetime import datetime as dt
 
 import asyncpg
 
@@ -38,6 +39,7 @@ class SimpUser:
         'guild_id',
         'user_id',
         'simping_for',
+        'simp_start',
     )
     __table__ = "simping_users"
     _table_create = """
@@ -45,6 +47,7 @@ class SimpUser:
             guild_id BIGINT,
             user_id BIGINT,
             simping_for BIGINT,
+            simp_start TIMESTAMP WITH  DEFAULT TIMEZONE('UTC', NOW()),
             PRIMARY KEY (guild_id, user_id, simping_for)
         );
     """.format(table=__table__)
@@ -52,16 +55,19 @@ class SimpUser:
     guild_id: int
     user_id: int
     simping_for: int
+    simp_start: dt
 
     def __init__(
             self,
             *,
             guild_id: int,
             user_id: int,
-            simping_for: int):
+            simping_for: int,
+            simp_start: dt):
         self.guild_id = guild_id
         self.user_id = user_id
         self.simping_for = simping_for
+        self.simp_start = simp_start
 
     @classmethod
     def from_record(cls, r: asyncpg.Record) -> Self:
@@ -73,6 +79,7 @@ class SimpUser:
             guild_id=r["guild_id"],
             user_id=r["user_id"],
             simping_for=r["simping_for"],
+            simp_start=r["simp_start"],
         )
 
     @classmethod

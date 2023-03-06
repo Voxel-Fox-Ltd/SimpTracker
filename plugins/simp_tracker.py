@@ -31,6 +31,7 @@ from utils.database import SimpUser
 async def get_simp_limit(user_id: int) -> int:
     return {
         704708159901663302: 69,
+        958819217984077935: 6,
     }.get(user_id, 5)
 
 
@@ -85,7 +86,7 @@ class SimpTracker(client.Plugin):
             return await ctx.send(
                 (
                     "Sorry, {0}, you're already simping for **{1}** people - "
-                    "you have hit the simp user limit."
+                    "you have hit the simp limit."
                 ).format(ctx.user.mention, current),
             )
 
@@ -222,15 +223,15 @@ class SimpTracker(client.Plugin):
 
         # Check out who they're simping for
         user = user or ctx.user
-        simping_for: list[int] = [
-            i.simping_for
+        simping_for: list[SimpUser] = [
+            i
             for i in await SimpUser.fetch(
                 guild_id=guild_id,
                 user_id=user.id,
             )
         ]
-        simped_by: list[int] = [
-            i.user_id
+        simped_by: list[SimpUser] = [
+            i
             for i in await SimpUser.fetch(
                 guild_id=guild_id,
                 simping_for=user.id,
@@ -241,14 +242,24 @@ class SimpTracker(client.Plugin):
         embed = novus.Embed(color=random.randint(1, 0xffffff))
         if simping_for:
             val = f"{user.mention} is simping for **{len(simping_for)}** users:\n"
-            val += "\n".join(f"<@{i}>" for i in simping_for)
+            for i in simping_for:
+                ts = novus.utils.format_timestamp(
+                    i.simp_start,
+                    novus.TimestampFormat.relative,
+                )
+                val += f"<@{i.simping_for}> ({ts})\n"
             embed.add_field("Simping", val, inline=False)
         else:
             val = f"{user.mention} is not simping for anyone."
             embed.add_field("Simping", val, inline=False)
         if simped_by:
             val = f"{user.mention} is being simped by **{len(simped_by)}** users:\n"
-            val += "\n".join(f"<@{i}>" for i in simped_by)
+            for i in simped_by:
+                ts = novus.utils.format_timestamp(
+                    i.simp_start,
+                    novus.TimestampFormat.relative,
+                )
+                val += f"<@{i.user_id}> ({ts})\n"
             embed.add_field("Simped", val, inline=False)
         else:
             val = f"{user.mention} is not simped by anyone."
